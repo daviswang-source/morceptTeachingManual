@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>後台操作手冊 · 默聲創意</title>
+<style>
+  :root {
+    --bg: #FFFDF5;
+    --surface: #FFFFFF;
+    --border: #EDE8D8;
+    --text-primary: #151C31;
+    --text-secondary: #5A5F72;
+    --text-muted: #A0A5B8;
+    --yellow: #F8CB2A;
+    --yellow-light: #FEF9EC;
+    --yellow-deep: #E6B800;
+    --navy: #151C31;
+    --shadow-sm: 0 1px 4px rgba(21,28,49,.06);
+    --shadow-md: 0 4px 20px rgba(21,28,49,.10);
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans TC', 'PingFang TC', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--navy);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 24px;
+    height: 54px;
+    flex-shrink: 0;
+  }
+  .header-logo {
+    width: 28px; height: 28px;
+    background: var(--yellow);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 900; color: var(--navy);
+  }
+  .header-title { font-size: 17px; font-weight: 700; }
+  .header-sub { font-size: 14px; color: rgba(255,255,255,.4); margin-left: auto; }
+
+  /* LAYOUT */
+  .layout { display: flex; flex: 1; overflow: hidden; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 268px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .search-wrap {
+    padding: 12px 12px 10px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .search-box:focus-within {
+    border-color: var(--yellow);
+    box-shadow: 0 0 0 3px rgba(248,203,42,.15);
+  }
+  .search-box input {
+    border: none; background: transparent;
+    font-size: 15px; color: var(--text-primary);
+    width: 100%; outline: none;
+  }
+  .search-box input::placeholder { color: var(--text-muted); }
+  .search-clear {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); font-size: 16px; line-height: 1;
+    display: none; padding: 0;
+  }
+  .search-clear.show { display: block; }
+
+  .sidebar-scroll { flex: 1; overflow-y: auto; padding: 6px 0 16px; }
+  .sidebar-scroll::-webkit-scrollbar { width: 3px; }
+  .sidebar-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Section label */
+  .sec-label {
+    display: flex; align-items: center; gap: 7px;
+    padding: 10px 12px 5px;
+    font-size: 12.5px; font-weight: 700; letter-spacing: .7px;
+    color: var(--text-muted); text-transform: uppercase;
+  }
+  .sec-badge {
+    background: var(--yellow); color: var(--navy);
+    font-size: 11px; font-weight: 800;
+    padding: 1px 5px; border-radius: 3px;
+  }
+
+  /* Sidebar item */
+  .s-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    font-size: 15px; color: var(--text-secondary);
+    line-height: 1.4;
+    transition: background .12s, border-color .12s;
+    user-select: none;
+  }
+  .s-item:hover { background: var(--yellow-light); color: var(--text-primary); }
+  .s-item.active {
+    background: var(--yellow-light);
+    border-left-color: var(--yellow);
+    color: var(--navy); font-weight: 600;
+  }
+  .s-item .ico { font-size: 15px; flex-shrink: 0; width: 17px; text-align: center; }
+  .s-tag {
+    margin-left: auto; font-size: 12px;
+    padding: 1px 6px; border-radius: 3px;
+    font-weight: 700; flex-shrink: 0;
+  }
+  .s-tag.video { background: var(--yellow); color: var(--navy); }
+  .s-tag.text { background: #EEF0F5; color: var(--text-muted); }
+
+  /* QA sub-group toggle */
+  .qa-group { }
+  .qa-group-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14.5px; font-weight: 600; color: var(--text-secondary);
+    border-left: 3px solid transparent;
+    transition: background .12s;
+    user-select: none;
+  }
+  .qa-group-header:hover { background: var(--yellow-light); color: var(--text-primary); }
+  .qa-group-header.open { color: var(--navy); }
+  .qa-group-header .g-arrow { margin-left: auto; font-size: 12px; transition: transform .2s; }
+  .qa-group-header.open .g-arrow { transform: rotate(90deg); }
+  .qa-sub { display: none; }
+  .qa-sub.open { display: block; }
+  .qa-sub .s-item { padding-left: 28px; font-size: 14.5px; }
+
+  /* CONTENT */
+  .content {
+    flex: 1; overflow-y: auto;
+    padding: 20px 24px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .content::-webkit-scrollbar { width: 4px; }
+  .content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Welcome */
+  .welcome {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 10px; color: var(--text-muted); text-align: center; padding: 40px;
+  }
+  .welcome-ico { font-size: 38px; opacity: .5; }
+  .welcome h2 { font-size: 17px; color: var(--text-secondary); font-weight: 600; }
+  .welcome p { font-size: 15px; line-height: 1.7; }
+
+  /* Content card */
+  .c-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .c-card-head {
+    padding: 14px 18px 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .c-card-ico { font-size: 19px; margin-top: 1px; flex-shrink: 0; }
+  .c-card-title { font-size: 16.5px; font-weight: 700; color: var(--navy); line-height: 1.4; }
+  .c-card-sub { font-size: 13.5px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Video */
+  .video-block { padding: 14px 18px; border-bottom: 1px solid var(--border); }
+  .video-wrap {
+    position: relative; width: 100%; padding-top: 56.25%;
+    background: #0d1117; border-radius: 7px; overflow: hidden;
+  }
+  .video-wrap iframe {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%; border: none;
+  }
+  .video-caption {
+    margin-top: 8px; font-size: 13.5px; color: var(--text-muted);
+    display: flex; align-items: flex-start; gap: 5px;
+  }
+  .video-caption span { color: var(--text-secondary); }
+
+  /* Answer block */
+  .a-block { padding: 14px 18px; }
+  .a-title {
+    font-size: 12.5px; font-weight: 700; letter-spacing: .6px;
+    color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;
+  }
+  .a-text { font-size: 15px; color: var(--text-secondary); line-height: 1.75; }
+
+  /* Step list */
+  .steps { list-style: none; margin-top: 10px; }
+  .steps li { display: flex; gap: 8px; padding: 3px 0; font-size: 15px; color: var(--text-secondary); }
+  .step-n {
+    background: var(--yellow); color: var(--navy);
+    font-size: 12px; font-weight: 800;
+    width: 17px; height: 17px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 3px;
+  }
+
+  /* Tip */
+  .tip {
+    margin-top: 10px;
+    background: var(--yellow-light);
+    border-left: 3px solid var(--yellow);
+    border-radius: 0 6px 6px 0;
+    padding: 8px 12px;
+    font-size: 14px; color: var(--text-secondary); line-height: 1.65;
+  }
+  .tip strong { color: var(--navy); }
+
+  /* Expandable QA inside card */
+  .inner-qa { border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 7px; }
+  .inner-qa-q {
+    display: flex; align-items: flex-start; gap: 9px;
+    padding: 10px 13px; cursor: pointer;
+    font-size: 15px; color: var(--text-primary); font-weight: 500;
+    line-height: 1.5; user-select: none;
+  }
+  .inner-qa-q .qi { font-size: 14px; color: var(--yellow-deep); font-weight: 800; flex-shrink: 0; margin-top: 1px; }
+  .inner-qa-q .qa-arr { margin-left: auto; color: var(--text-muted); font-size: 12px; flex-shrink: 0; margin-top: 3px; transition: transform .2s; }
+  .inner-qa.open .qa-arr { transform: rotate(90deg); }
+  .inner-qa-a {
+    display: none; padding: 0 13px 10px 34px;
+    font-size: 14.5px; color: var(--text-secondary); line-height: 1.7;
+    border-top: 1px solid var(--border);
+  }
+  .inner-qa.open .inner-qa-a { display: block; }
+
+  /* Related tags */
+  .related { padding: 10px 18px 14px; border-top: 1px solid var(--border); }
+  .related-title { font-size: 12.5px; font-weight: 700; letter-spacing: .6px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 7px; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tag-btn {
+    font-size: 14px; background: #EEF0F5; color: var(--text-secondary);
+    border: none; border-radius: 20px; padding: 4px 10px; cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .tag-btn:hover { background: var(--yellow); color: var(--navy); font-weight: 600; }
+
+  /* ── SEARCH RESULTS (B mode) ── */
+  .search-results { display: flex; flex-direction: column; gap: 8px; }
+  .result-meta {
+    font-size: 14.5px; color: var(--text-muted); padding: 2px 0 4px;
+  }
+  .result-meta span { color: var(--navy); font-weight: 700; }
+
+  .r-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .r-card:hover { border-color: var(--yellow); box-shadow: 0 2px 12px rgba(248,203,42,.2); }
+  .r-card.open { border-color: var(--yellow); }
+
+  .r-head {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 14px;
+  }
+  .r-badge {
+    font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 3px;
+    flex-shrink: 0; margin-top: 1px; white-space: nowrap;
+  }
+  .r-q { font-size: 15.5px; font-weight: 500; line-height: 1.5; flex: 1; }
+  .r-arr { color: var(--text-muted); font-size: 13px; flex-shrink: 0; margin-top: 3px; transition: transform .2s; }
+  .r-card.open .r-arr { transform: rotate(90deg); }
+
+  .r-body {
+    display: none; padding: 0 14px 12px 14px;
+    border-top: 1px solid var(--border);
+  }
+  .r-card.open .r-body { display: block; }
+  .r-label { font-size: 12px; font-weight: 700; letter-spacing: .5px; color: var(--text-muted); text-transform: uppercase; margin: 10px 0 5px; }
+  .r-a { font-size: 15px; color: var(--text-secondary); line-height: 1.7; }
+
+  .r-video-hint {
+    display: inline-flex; align-items: center; gap: 5px;
+    margin-top: 10px; font-size: 14px;
+    background: var(--yellow-light); color: var(--navy);
+    border: 1px solid var(--yellow); border-radius: 5px;
+    padding: 5px 10px; cursor: pointer; font-weight: 600;
+    transition: background .15s;
+  }
+  .r-video-hint:hover { background: var(--yellow); }
+
+  mark { background: var(--yellow); border-radius: 2px; padding: 0 1px; }
+
+  /* Badge colors by category */
+  .badge-後台操作 { background: #EEF2FF; color: #3730A3; }
+  .badge-網站異常 { background: #FFF1F2; color: #BE123C; }
+  .badge-需求評估 { background: #F0FDF4; color: #166534; }
+  .badge-SEO      { background: #FEF9C3; color: #854D0E; }
+  .badge-主機續約  { background: #FFF7ED; color: #9A3412; }
+  .badge-代碼串接  { background: #F0F4FF; color: #1D4ED8; }
+  .badge-特殊功能  { background: #FAF5FF; color: #6B21A8; }
+
+  .empty-state {
+    display: none; text-align: center; padding: 40px 20px;
+    color: var(--text-muted); font-size: 15px; line-height: 1.7;
+  }
+  .empty-state.show { display: block; }
+  .empty-state .e-ico { font-size: 34px; margin-bottom: 10px; opacity: .5; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">默</div>
+  <div class="header-title">後台操作手冊</div>
+  <div class="header-sub">默聲創意 · 客戶服務中心</div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="search-wrap">
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="您想找什麼呢？" oninput="onSearch(this.value)">
+        <button class="search-clear" id="clearBtn" onclick="clearSearch()">✕</button>
+      </div>
+    </div>
+
+    <div class="sidebar-scroll">
+
+      <!-- 影片教學 -->
+      <div class="sec-label">🎬 基本操作教學 <span class="sec-badge">影片</span></div>
+      <div class="s-item" onclick="showVideo('login')" id="si-login">
+        <span class="ico">🔐</span>登入後台<span class="s-tag video">影片</span>
+      </div>
+      <div class="s-item" onclick="showVideo('article')" id="si-article">
+        <span class="ico">📝</span>新增 / 編輯文章<span class="s-tag video">影片</span>
+      </div>
+      <div class="s-item" onclick="showVideo('image')" id="si-image">
+        <span class="ico">🖼️</span>上傳與管理圖片<span class="s-tag video">影片</span>
+      </div>
+      <div class="s-item" onclick="showVideo('menu')" id="si-menu">
+        <span class="ico">🗂️</span>修改選單與頁面順序<span class="s-tag video">影片</span>
+      </div>
+
+      <!-- 常見問題 by category -->
+      <div class="sec-label" style="margin-top:6px;">❓ 常見問題</div>
+      <div id="qaGroups"></div>
+
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content" id="contentArea">
+
+    <!-- Welcome -->
+    <div class="welcome" id="welcomeState">
+      <div class="welcome-ico">📖</div>
+      <h2>歡迎使用後台操作手冊</h2>
+      <p>從左側選擇項目，或直接在搜尋框輸入問題<br>影片教學可觀看操作示範，常見問題提供文字說明</p>
+    </div>
+
+    <!-- Search results (B mode) -->
+    <div id="searchPanel" class="hidden">
+      <div class="result-meta" id="resultMeta"></div>
+      <div class="search-results" id="resultList"></div>
+      <div class="empty-state" id="emptyState">
+        <div class="e-ico">🔍</div>
+        找不到相關問題<br>試試其他關鍵字，或直接<a href="mailto:service@morcept.com" style="color:var(--navy);font-weight:600;">聯繫我們</a>
+      </div>
+    </div>
+
+    <!-- Video: 登入後台 -->
+    <div id="cv-login" class="hidden">
+      <div class="c-card">
+        <div class="c-card-head">
+          <div class="c-card-ico">🔐</div>
+          <div>
+            <div class="c-card-title">登入後台</div>
+            <div class="c-card-sub">影片教學 · 約 1 分 30 秒</div>
+          </div>
+        </div>
+        <div class="video-block">
+          <div class="video-wrap">
+            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0&modestbranding=1"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+          <div class="video-caption">📌 <span>從瀏覽器輸入網址、填寫帳號密碼，到進入後台首頁的完整流程</span></div>
+        </div>
+        <div class="a-block">
+          <div class="a-title">操作步驟摘要</div>
+          <ul class="steps">
+            <li><span class="step-n">1</span>在瀏覽器輸入後台網址（通常為 yoursite.com/wp-admin）</li>
+            <li><span class="step-n">2</span>輸入 Morcept 提供的帳號與密碼</li>
+            <li><span class="step-n">3</span>點選「登入」，即可進入後台首頁</li>
+          </ul>
+          <div class="tip"><strong>💡 建議：</strong>將後台網址加入書籤方便下次進入。若忘記密碼，可點登入頁的「忘記密碼」自助重設。</div>
+        </div>
+        <div class="a-block" style="border-top:1px solid var(--border);">
+          <div class="a-title">觀看這段影片後，常見的延伸問題</div>
+          <div class="inner-qa" onclick="toggleInner(this)">
+            <div class="inner-qa-q"><span class="qi">Q</span>登入後一直轉圈或跳回登入頁，怎麼辦？<span class="qa-arr">▶</span></div>
+            <div class="inner-qa-a">通常是瀏覽器快取或 Cookie 的問題。請嘗試：① 清除瀏覽器快取（Chrome：Ctrl+Shift+Del）② 改用「無痕模式」登入 ③ 若仍無法解決，請聯繫 Morcept 協助。</div>
+          </div>
+          <div class="inner-qa" onclick="toggleInner(this)">
+            <div class="inner-qa-q"><span class="qi">Q</span>可以讓多人使用同一個帳號嗎？<span class="qa-arr">▶</span></div>
+            <div class="inner-qa-a">不建議，這樣無法追蹤誰做了哪些修改，也有安全疑慮。如需多人登入，請聯繫 Morcept 協助新增帳號並設定權限。</div>
+          </div>
+          <div class="inner-qa" onclick="toggleInner(this)">
+            <div class="inner-qa-q"><span class="qi">Q</span>後台介面都是英文看不懂，有中文版嗎？<span class="qa-arr">▶</span></div>
+            <div class="inner-qa-a">後台本身沒有中文介面，但可在瀏覽器頁面按右鍵 → 選「翻譯成中文」，即可暫時將整個介面翻譯，不影響網站運作。</div>
+          </div>
+        </div>
+        <div class="related">
+          <div class="related-title">相關主題</div>
+          <div class="tag-row">
+            <button class="tag-btn" onclick="showQA('後台操作',2)">🔑 帳號權限</button>
+            <button class="tag-btn" onclick="showQA('網站異常',12)">🔄 修改後沒更新</button>
+            <button class="tag-btn" onclick="showVideo('article')">📝 新增文章</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Video placeholders -->
+    <div id="cv-article" class="hidden">
+      <div class="c-card">
+        <div class="c-card-head"><div class="c-card-ico">📝</div><div><div class="c-card-title">新增 / 編輯文章</div><div class="c-card-sub">影片教學（準備中）</div></div></div>
+        <div class="a-block"><div class="tip" style="background:#F5F5F5;border-left-color:#ccc;">🎬 此教學影片準備中，如有急迫需求請聯繫 Morcept。</div></div>
+      </div>
+    </div>
+    <div id="cv-image" class="hidden">
+      <div class="c-card">
+        <div class="c-card-head"><div class="c-card-ico">🖼️</div><div><div class="c-card-title">上傳與管理圖片</div><div class="c-card-sub">影片教學（準備中）</div></div></div>
+        <div class="a-block"><div class="tip" style="background:#F5F5F5;border-left-color:#ccc;">🎬 此教學影片準備中，如有急迫需求請聯繫 Morcept。</div></div>
+      </div>
+    </div>
+    <div id="cv-menu" class="hidden">
+      <div class="c-card">
+        <div class="c-card-head"><div class="c-card-ico">🗂️</div><div><div class="c-card-title">修改選單與頁面順序</div><div class="c-card-sub">影片教學（準備中）</div></div></div>
+        <div class="a-block"><div class="tip" style="background:#F5F5F5;border-left-color:#ccc;">🎬 此教學影片準備中，如有急迫需求請聯繫 Morcept。</div></div>
+      </div>
+    </div>
+
+    <!-- QA detail panel -->
+    <div id="qaDetailPanel" class="hidden">
+      <div class="c-card" id="qaDetailCard"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const QA_DATA = [
+  { id:1, cat:"後台操作", q:"圖片尺寸是多少？可以從哪裡看？", a:"到媒體庫可以查看詳細資料，或是直接另存圖片下來查看。", kw:["圖片","尺寸","大小","解析度","寬度","高度","媒體庫","media","pixel","px","幾乘幾","圖片規格","圖檔","圖片要多大","要傳幾MB","上傳圖片規格","圖片比例","圖片太小","圖片太大","要幾公分","圖片尺寸怎麼看","圖片比例不對","照片大小","照片尺寸","圖片長寬"] },
+  { id:2, cat:"後台操作", q:"後台權限不夠完整，可以加開嗎？", a:"可以，但後續不包含維運服務。請聯繫我們確認需要開放的權限範圍。", kw:["權限","加開","帳號","角色","管理員","editor","admin","無法操作","看不到","功能不見","權限不夠","存取","某些功能不見了","沒辦法編輯","按鈕不見","同事登入看不到","幫同事開帳號","新增使用者","員工帳號","多人使用","另一個帳號","分公司帳號","限制權限","開放更多功能"] },
+  { id:3, cat:"後台操作", q:"網站可以放影片嗎？", a:"可以，請先將影片上傳到 YouTube 或 Vimeo，再提供連結給我們嵌入。", kw:["影片","video","youtube","vimeo","上傳影片","嵌入","播放","mp4","影音","想放一段影片","網站嵌入影片","公司介紹影片","產品影片","宣傳片","把影片放到網站","背景影片","影片怎麼上傳","影片播不出來","直接上傳影片","影片連結"] },
+  { id:4, cat:"後台操作", q:"想要加上表格，可以怎麼做？", a:"請先由我們協助建立表格，再說明操作邏輯給您了解，方便後續自行維護。", kw:["表格","table","欄位","列","行","資料表","新增表格","像Excel那種","價格表","比較表","規格表","做個表格","功能比較","方案對比","類似試算表","要做一個表","加入圖表","資料整理成表格"] },
+  { id:5, cat:"後台操作", q:"網站內容已修改，但為什麼電腦/手機顯示不一樣？", a:"可能只改到其中一個版本（電腦版或手機版）的設定，請確認兩個裝置版本都有更新。", kw:["手機","電腦","版型","RWD","響應式","不一樣","顯示","跑版","排版","mobile","desktop","只有電腦","只有手機","用手機看不對","手機版跑掉","平板顯示異常","手機排版亂掉","電腦改好但手機壞了","兩個版本","手機版沒更新","手機和電腦不一樣","平板版","用手機看網站","響應式壞了"] },
+  { id:6, cat:"後台操作", q:"後台有中文版可以使用嗎？", a:"後台本身沒有中文版，但可以使用瀏覽器內建的翻譯功能將介面翻成中文。", kw:["中文","語言","翻譯","英文看不懂","介面","後台語言","改成中文","中文化","全部都是英文","看不懂英文","操作介面英文","後台都是英文字","可以翻中文嗎","介面語言","後台語言設定","改語言","中文介面","英文介面看不懂"] },
+  { id:7, cat:"後台操作", q:"為什麼設定粗體後文字會變色？", a:"這是因為樣式有預先設定的緣故，粗體文字的顏色由佈景主題樣式控制。如需調整請聯繫我們。", kw:["粗體","bold","變色","顏色","文字顏色","字體顏色","樣式","字色","改顏色","字加粗顏色變了","我只是想加粗","變藍色","粗體後變其他顏色","文字格式問題","加粗出問題","字體顏色自動改變","格式跑掉","文字樣式異常","設定粗體顏色跑掉"] },
+  { id:8, cat:"後台操作", q:"文章排序可以更動嗎？", a:"可以，通常是修改發布日期來調整排序；若有安裝排序外掛則依照外掛設定操作。", kw:["排序","順序","文章","調整順序","文章排列","先後","置頂","排列","發布日期","文章順序亂掉","想把某篇文章排最前面","調整新聞順序","文章置頂","改文章位置","最新文章跑哪去了","怎麼讓這篇排第一","文章列表順序","舊文章跑出來","文章排列方式"] },
+  { id:9, cat:"後台操作", q:"可以自己改字型、字級、行距嗎？", a:"這類樣式設定需要由我們端調整，請直接告知需求，我們會協助處理。", kw:["字型","字體","字級","行距","font","大小","字體大小","line-height","排版","字距","改字","字太小","字太大","行間距太窄","字看起來太擠","想換一個字體","文字間距","字體樣式","文字太密","字體不好看","整個網站字體","全站字型","換成圓體","換成黑體"] },
+  { id:10, cat:"後台操作", q:"文章下方的描述要怎麼改？", a:"進到文章後台 → 展開右上角「顯示更多項目」→ 將「內容摘要」打勾 → 下方會出現可編輯的「內容摘要」欄位。", kw:["描述","摘要","文章描述","excerpt","文章下方","簡介","文章簡介","內容摘要","列表描述","文章列表下面那段字","預覽文字","文章小簡介","封面下方的說明","文章卡片的說明文字","列表頁的文字介紹","文章概要","短描述在哪改","文章條列介紹","顯示在列表的那段文字"] },
+  { id:11, cat:"網站異常", q:"表單收不到信，可以怎麼調整？", a:"請提供一組 Gmail（需要帳號、密碼、驗證用手機號碼），我們協助重新設定寄件信箱。", kw:["表單","收不到","信件","email","mail","沒收到","寄信","聯絡表單","form","通知信","收信","信箱","客人填了沒反應","沒有收到通知","表單送出沒有信","聯絡我們沒有回應","客戶填單我沒收到","填完表單沒有寄信","詢問表單不寄信","報名表單沒收到","信跑去哪","表單失效","沒有寄信過來"] },
+  { id:12, cat:"網站異常", q:"修改後前台無法正常顯示，是什麼原因？", a:"通常是快取問題，請清除瀏覽器快取後重新整理看看。", kw:["快取","cache","清快取","顯示不正確","沒更新","畫面沒變","清除快取","重新整理","更新沒顯示","瀏覽器快取","我明明已經改了","改完網站沒變","後台改好前台還是舊的","存檔了但沒更新","怎麼還是舊版","重新整理還是一樣","瀏覽器沒更新","畫面還是舊的","改了但沒有生效","存了但看不到"] },
+  { id:13, cat:"網站異常", q:"網站為什麼突然連不上？", a:"請先確認主機與網域的狀況是否正常，可以聯繫我們協助排查。", kw:["連不上","無法連線","網站掛了","404","500","down","當機","打不開","沒有回應","網頁錯誤","connection","主機","掛掉","網站壞掉了","網站打不開","白畫面","空白頁","網站消失了","找不到網頁","一直轉圈圈","網站出錯了","客戶說連不上","突然不能用","網頁出現錯誤","網站跑不出來"] },
+  { id:14, cat:"網站異常", q:"用公司網路連不上網站，是什麼原因？", a:"可能是公司內網有防火牆擋住，請嘗試將網站加入公司網路的白名單。", kw:["公司網路","內網","連不上","白名單","防火牆","辦公室","vpn","blocked","公司內部","公司電腦","在公司打不開","辦公室看不到","用公司wifi連不上","回家就正常","用手機4G可以但公司不行","同事說打不開","公司電腦看不到","公司網路被擋","IT說被擋了","在外面可以在公司不行"] },
+  { id:15, cat:"網站異常", q:"登入後台時跳出「網站管理員電子郵件地址驗證」，要怎麼辦？", a:"點左下角「稍後提醒我」略過即可，不影響正常使用。", kw:["驗證","電子郵件","驗證信","後台登入","跳出視窗","管理員","email驗證","彈跳","提示","登入異常","登入後跳出一個視窗","有個視窗一直出現","登入有警告訊息","要我驗證email","登入出現通知","後台有個彈跳提醒","一登入就出現視窗","不知道要按什麼","登入後有提示框","強迫我驗證"] },
+  { id:16, cat:"網站異常", q:"已經更改快速連結，但為什麼都會失效？", a:"請改到「佇列處 → 快速編輯 → 從代稱修改」，而不是直接修改標題。", kw:["快速連結","連結","失效","網址","url","slug","代稱","改連結","連結錯誤","permalink","路徑","網址改了但點進去是舊的","連結404","改了網址點下去沒有","文章網址失效","連結壞掉","分享出去的連結失效","舊連結失效","改標題後連結不見","網址變了","點連結沒反應"] },
+  { id:17, cat:"網站異常", q:"一直收到垃圾/釣魚信件，可以怎麼防治？", a:"可以確認是否有安裝 reCAPTCHA，或由我們手動封鎖 IP；若來源集中在特定國家，也可報價封鎖特定國家 IP。", kw:["垃圾信","釣魚","spam","機器人","bot","表單亂填","recaptcha","封鎖ip","防垃圾","騷擾信","填單攻擊","一直收到奇怪的信","收到很多亂填的表單","有人一直攻擊表單","信箱被洗","假信件","有人用機器人填表單","一直有騷擾","惡意填單","廣告信件","釣魚郵件","詐騙信"] },
+  { id:18, cat:"網站異常", q:"為什麼 favicon 都還是一顆地球？", a:"請確認設計是否有設定網站圖示（favicon）。如確認已設定但仍顯示地球，請聯繫我們協助排查。", kw:["favicon","地球","圖示","網站圖示","icon","tab圖","瀏覽器icon","小圖","網頁圖示","logo沒換","瀏覽器分頁上的小圖","分頁最前面的那個圖","標籤頁的圖示","Chrome分頁圖案","開很多分頁那個小圖","網站分頁圖還是地球","Tab上的圖沒換","書籤旁邊的圖","網址列旁邊的圖示","那個小小的網站圖案沒有換","我們的logo沒有出現在分頁","瀏覽器標籤圖示","網站縮圖","地球圖案沒換"] },
+  { id:19, cat:"網站異常", q:"為什麼手機版選單會有重複的項目？", a:"這是正常的設計。因為「展開子選單」和「進入頁面」這兩個功能在手機版上會有衝突，所以系統會多顯示一個項目，確保兩個操作都能執行。", kw:["手機選單","重複","選單","menu","導覽","nav","重疊","手機版","項目重複","選單異常","手機版導覽列有兩個一樣的","點漢堡選單出現重複","手機點開選單重複","同樣的選項出現兩次","手機版有bug","手機選單壞掉了","導覽列重複","選單顯示異常","手機點選單有兩個"] },
+  { id:20, cat:"需求評估", q:"圖片可以不被下載嗎？", a:"可以設定鎖右鍵（全站），讓訪客無法直接右鍵另存圖片。", kw:["下載","圖片","鎖右鍵","防下載","禁止另存","版權","protect","保護圖片","不讓下載","右鍵","不想讓人存圖","防止別人拿走圖片","圖片被偷走","不讓訪客下載","右鍵另存另存圖片","防盜圖","圖片版權保護","點右鍵不要有另存","圖片不給下載","不想讓人複製圖片","禁止右鍵"] },
+  { id:21, cat:"需求評估", q:"LOGO 跟選單可以從哪裡改？", a:"LOGO 和選單需由我們端協助修改，請提供新的素材或修改需求即可。", kw:["logo","選單","導覽列","menu","標誌","header","頁首","更換logo","改選單","修改logo","導航","想換公司logo","改上方的圖案","換一個新logo","導覽列要改","選單要加新項目","logo要更新","網站最上方的圖","把logo換掉","選單順序要調整","頁首的logo","新增選單","改導覽欄"] },
+  { id:22, cat:"需求評估", q:"有網站資料想要更新，應該要提供什麼資料？以及上傳到哪？", a:"請整理成一份 Word 或 PPT 檔案後寄到我們信箱，圖檔需另外提供（不要嵌在文件內）。", kw:["更新資料","提供資料","更新內容","怎麼給","寄給","怎麼傳","素材","文字更新","圖片更新","內容修改","資料給你","我要更新網站內容","文案要改","要換圖片","要修改文字","提供修改內容","傳給你怎麼傳","素材要放哪","資料怎麼給你","圖片要怎麼傳","用什麼方式給你","寄到哪個信箱","要交給你什麼"] },
+  { id:23, cat:"需求評估", q:"想使用自己的 SSL 憑證，可以嗎？", a:"可以，視情況可能有額外費用，請聯繫我們評估。", kw:["ssl","https","憑證","安全","鎖頭","加密","自己的ssl","換憑證","ssl錯誤","安全性","不安全","網址列沒有鎖頭","瀏覽器說不安全","網址是http不是https","安全憑證","連線不安全","瀏覽器警告不安全","網址沒有綠色鎖頭","用戶說不安全","網站顯示不安全","ssl自備"] },
+  { id:24, cat:"需求評估", q:"網站想要新增語系，應該要怎麼做？", a:"請轉由業務報價，翻譯內容由客戶自行提供。", kw:["多語言","語系","英文","日文","翻譯","語言","i18n","新增語言","多國","語言切換","多語","要加英文版","想做日文版","新增語言版本","語言切換按鈕","做一個英文頁面","國外客戶看","外國人看的版本","想要中英雙語","多國語言網站","加一個語言","網站語言要多一個"] },
+  { id:25, cat:"需求評估", q:"有檔案想讓訪客下載，可以怎麼做？", a:"請先將檔案上傳到雲端空間（如 Google Drive），再將分享連結提供給我們設定在頁面上。", kw:["下載","檔案","文件","PDF","讓人下載","附件","提供下載","download","資料下載","google drive","想讓客戶下載型錄","放一個PDF可以下載","提供檔案給訪客","型錄下載","報告書下載","讓人下載我的文件","加一個下載按鈕","可以下載的連結","附上可下載的檔案","DM下載","表單下載"] },
+  { id:26, cat:"需求評估", q:"不喜歡網站上的字體，可以改成想要的嗎？", a:"可以，但只能使用 Google Fonts 上提供的字體。", kw:["字體","font","換字體","字型","中文字體","英文字體","google font","改字型","字體不好看","字體感覺不對","整個網站字體想換","這個字型太正式","想要圓一點的字","想換成比較活潑的字","字體太嚴肅","字型可以換嗎","全站字型","換字型","想要蘋方字體","字體風格不喜歡"] },
+  { id:27, cat:"需求評估", q:"為什麼分享的連結會是一堆亂碼？", a:"中文網址在系統處理後會變成編碼（URL encoding），在意的話可以將網址改為英文。", kw:["亂碼","連結","分享","網址","url","中文","編碼","%","醜","網址亂碼","slug中文","網址一堆%號","複製網址很奇怪","連結看起來很醜","網址有很多符號","傳給別人的連結亂碼","分享出去URL是奇怪的字","網址不是中文","URL亂碼","複製連結是亂的","網址沒辦法直接看懂"] },
+  { id:28, cat:"需求評估", q:"能請你們幫我做素材圖嗎？", a:"素材圖屬於平面設計服務，請轉由業務報價。", kw:["素材","圖","設計","banner","橫幅","做圖","製圖","視覺","圖片設計","美工","幫我做圖","幫我設計一張圖","做一個banner","製作活動圖","需要美工","設計圖片","做視覺素材","需要一張宣傳圖","圖片設計","做廣告圖","社群貼圖","活動DM","封面圖設計"] },
+  { id:29, cat:"SEO", q:"可以從哪裡設定 SEO？", a:"每個文章、頁面、Portfolio items、產品下方都有 SEO 設定區塊，可以在各頁面底部找到。", kw:["seo","設定seo","哪裡設定","搜尋","優化","關鍵字","google排名","搜尋引擎","yoast","meta","怎麼讓google找到我","想讓網站出現在搜尋","google搜不到我","要去哪裡填關鍵字","搜尋引擎優化在哪設定","SEO要在哪邊改","怎麼設定頁面關鍵字","想讓排名上去","設定搜尋關鍵字"] },
+  { id:30, cat:"SEO", q:"為什麼已經調整 SEO 設定，但沒有顯示？", a:"SEO 更新需要等 Google 重新爬取網站，時間不固定，通常需要幾天到幾週不等。", kw:["seo沒更新","沒顯示","搜尋看不到","google沒更新","索引","爬蟲","還沒顯示","多久","更新多久","改了SEO但google沒變","已經設定了但搜不到","搜尋結果沒有更新","幾天才會生效","為什麼還是舊的","設定完要等多久","google還沒抓到","搜尋描述還是舊的","Title改了沒生效","SEO要多久才有效"] },
+  { id:31, cat:"SEO", q:"可以移除分享連結後出現的「上一頁、下一頁」描述嗎？", a:"可以。請到 meta description 欄位，將裡面的方塊符號刪掉，換成您想呈現的文案即可。", kw:["分享","預覽","上一頁","下一頁","og","open graph","描述","meta description","社群分享","fb分享","line分享","分享到LINE預覽怪怪的","臉書分享顯示錯誤","分享出去描述是錯的","IG分享預覽","社群分享不好看","分享連結下面的說明不對","貼到Line的預覽","縮圖下面的說明","分享卡片","分享出去那個方塊"] },
+  { id:32, cat:"SEO", q:"頁面 Title、Meta Description、focus keyphrase 應該填什麼？", a:"Title 是在搜尋結果中顯示的頁面標題；Meta Description 是頁面描述；focus keyphrase 是該頁面最主要的關鍵字。", kw:["title","meta","description","keyphrase","關鍵字","填什麼","seo怎麼填","標題","頁面標題","seo設定說明","SEO那些欄位要填什麼","頁面標題要怎麼寫","描述欄位填什麼","關鍵字要怎麼選","SEO欄位說明","搜尋標題要填什麼","focus keyphrase是什麼","meta要怎麼寫","SEO欄位填法","搜尋結果標題怎麼改"] },
+  { id:33, cat:"SEO", q:"已經有找廠商分析網站的 SEO，你們可以協助執行嗎？", a:"可以，視情況評估是否有額外費用，請提供廠商的分析報告給我們確認範圍。", kw:["seo執行","seo優化","廠商","第三方","SEO報告","優化建議","seo服務","幫我做seo","有人幫我做了SEO分析","顧問建議我改SEO","SEO公司給的建議","幫我執行SEO改善","SEO優化報告","按照報告改SEO","有一份SEO建議書","依據分析執行","SEO改善項目"] },
+  { id:34, cat:"主機續約", q:"應該要轉帳到哪個帳戶？", a:"轉帳帳戶資訊在請款單上都有，請以最新的請款單為準。", kw:["轉帳","帳戶","繳費","付款","匯款","帳號","銀行","怎麼付","繳款","付費方式","費用要怎麼繳","主機費要匯去哪","要打哪個帳號","網域費用付款","主機費怎麼繳","繳費帳號是多少","要匯款到哪","帳戶資訊","怎麼繳主機費","付款資訊在哪"] },
+  { id:35, cat:"主機續約", q:"主機/網域到期日是什麼時候？", a:"到期日在請款單上都有列明，請查看最新的請款單。", kw:["到期","到期日","續約","何時到期","什麼時候","expire","期限","什麼時候要付","快到期","主機什麼時候到期","網域要到期了嗎","什麼時候要繳費","快到期了嗎","幾月要續約","網域快過期","主機到期","到期了嗎","還有多久到期","幾號要繳","今年什麼時候要付"] },
+  { id:36, cat:"主機續約", q:"不續約的話，網站還可以正常運作嗎？", a:"不行。主機或網域到期後，網站將無法正常運作，請務必在到期前完成續約。", kw:["不續約","停掉","不付","到期後","網站還能用","不用了","過期","關掉","如果不付網站會怎樣","不繳費網站會消失嗎","忘記續約怎麼辦","到期沒付會怎麼樣","不想繼續了","主機不繼續可以嗎","到期後還能用嗎","過了沒繳","不付網站就關了嗎"] },
+  { id:37, cat:"主機續約", q:"可以自行管理網站/網域嗎？", a:"可以，若您想自行管理，我們會提供備份檔供您下載（限一週內下載）。", kw:["自己管","自行管理","搬走","移轉","備份","拿走","自己主機","換主機","搬移","備份檔","我想自己管網站","把網站搬到別的地方","換其他廠商","我想要檔案","網站搬家","要備份網站","把資料拿回來","自己架主機","離開你們後網站怎辦","資料可以拿走嗎"] },
+  { id:38, cat:"主機續約", q:"空間還有多少可以用？如果不夠了可以加購嗎？", a:"可以升級主機方案，目前空間使用量請聯繫設計確認。", kw:["空間","容量","主機空間","不夠用","加購","升級","硬碟","storage","滿了","空間不夠","上傳圖片說空間不足","網站說容量滿了","伺服器空間","主機快滿了","儲存空間不夠","上傳失敗說空間不足","還有多少空間","圖片上傳失敗空間","主機容量升級","擴充空間"] },
+  { id:39, cat:"主機續約", q:"可以先開立發票嗎？", a:"可以，請提供公司抬頭、統一編號及地址，我們會協助先開立發票。", kw:["發票","開發票","統編","報帳","請款","先開","三聯式","電子發票","公司發票","需要發票報帳","要繳費用但需要發票","先給發票後付款","公司要發票才能匯款","統一編號開發票","要報帳需要發票","三聯式發票","先開再付","發票抬頭"] },
+  { id:40, cat:"代碼串接", q:"可以串接 GA / GTM / Facebook Pixel / 廣告轉換碼 / 企業信箱 / Pinterest 嗎？", a:"可以，使用 Tracking Code Manager 串接即可。請提供相關代碼或設定資訊給我們處理。", kw:["GA","GTM","google analytics","google tag manager","fb pixel","facebook pixel","追蹤","廣告","轉換","GSC","企業信箱","追蹤碼","串接","代碼","pixel","pinterest","廣告代碼","想知道有多少人來看網站","安裝GA","放追蹤碼","廣告追蹤","FB廣告追蹤","安裝像素","Google搜尋後台","想看流量數據","廣告轉換追蹤","安裝分析工具","網站流量分析","裝GTM","Google廣告代碼","企業email","信箱串接","公司信箱"] },
+  { id:41, cat:"特殊功能", q:"可以串接第三方 API 嗎？", a:"可以評估，請轉由業務接洽，我們會確認技術可行性與報價。", kw:["api","串接","第三方","金流","物流","crm","erp","系統整合","串api","外部系統","api串接","想串金流","綠界","藍新","物流追蹤","跟ERP串","跟CRM連動","資料同步","串其他系統","讓兩個系統互通","想接某某系統","自動帶入資料","系統整合","外部資料串接","API介接"] }
+];
+
+// 影片教學對應的相關問題 ID（未來可依影片內容設定）
+const VIDEO_RELATED_QA = {
+  login:   [2, 12, 6],
+  article: [8, 10, 7],
+  image:   [1, 20, 25],
+  menu:    [21, 16, 5]
+};
+
+// ── Build QA groups in sidebar ──
+const CAT_ICONS = {
+  "後台操作": "⚙️", "網站異常": "🚨", "需求評估": "💬",
+  "SEO": "🔎", "主機續約": "🗓️", "代碼串接": "🔌", "特殊功能": "✨"
+};
+const cats = [...new Set(QA_DATA.map(d => d.cat))];
+const groupsEl = document.getElementById('qaGroups');
+
+cats.forEach(cat => {
+  const items = QA_DATA.filter(d => d.cat === cat);
+  const groupDiv = document.createElement('div');
+  groupDiv.className = 'qa-group';
+  groupDiv.dataset.cat = cat;
+
+  const header = document.createElement('div');
+  header.className = 'qa-group-header';
+  header.innerHTML = `<span>${CAT_ICONS[cat]||'❓'} ${cat}</span><span class="g-arrow">▶</span>`;
+  header.onclick = () => {
+    header.classList.toggle('open');
+    sub.classList.toggle('open');
+  };
+
+  const sub = document.createElement('div');
+  sub.className = 'qa-sub';
+  items.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 's-item';
+    el.dataset.id = item.id;
+    el.innerHTML = `<span class="ico">·</span>${item.q}`;
+    el.onclick = () => showQADetail(item.id);
+    sub.appendChild(el);
+  });
+
+  groupDiv.appendChild(header);
+  groupDiv.appendChild(sub);
+  groupsEl.appendChild(groupDiv);
+});
+
+// ── State ──
+let currentMode = 'welcome'; // welcome | video | qa | search
+let activeItemId = null;
+
+function clearActive() {
+  document.querySelectorAll('.s-item.active').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.qa-group-header.active').forEach(el => el.classList.remove('active'));
+}
+
+function hideAllContent() {
+  document.getElementById('welcomeState').classList.add('hidden');
+  document.getElementById('searchPanel').classList.add('hidden');
+  document.querySelectorAll('[id^="cv-"]').forEach(el => el.classList.add('hidden'));
+  document.getElementById('qaDetailPanel').classList.add('hidden');
+}
+
+function showVideo(id) {
+  clearActive();
+  hideAllContent();
+  const si = document.getElementById('si-' + id);
+  if (si) si.classList.add('active');
+  document.getElementById('cv-' + id).classList.remove('hidden');
+  document.querySelector('.content').scrollTop = 0;
+  currentMode = 'video';
+}
+
+function showQADetail(id) {
+  const item = QA_DATA.find(d => d.id === id);
+  if (!item) return;
+  clearActive();
+  hideAllContent();
+
+  // highlight sidebar item
+  const sEl = document.querySelector(`.s-item[data-id="${id}"]`);
+  if (sEl) {
+    sEl.classList.add('active');
+    // open parent group
+    const sub = sEl.closest('.qa-sub');
+    if (sub && !sub.classList.contains('open')) {
+      sub.classList.add('open');
+      sub.previousElementSibling.classList.add('open');
+    }
+  }
+
+  const card = document.getElementById('qaDetailCard');
+  card.innerHTML = `
+    <div class="c-card-head">
+      <div class="c-card-ico">${CAT_ICONS[item.cat]||'❓'}</div>
+      <div>
+        <div class="c-card-title">${item.q}</div>
+        <div class="c-card-sub">${item.cat}</div>
+      </div>
+    </div>
+    <div class="a-block">
+      <div class="a-title">解決方式</div>
+      <div class="a-text">${item.a}</div>
+    </div>
+  `;
+  document.getElementById('qaDetailPanel').classList.remove('hidden');
+  document.querySelector('.content').scrollTop = 0;
+  currentMode = 'qa';
+}
+
+// alias used by tag buttons
+function showQA(cat, id) { showQADetail(id); }
+
+// ── Search ──
+function score(item, q) {
+  const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+  let s = 0;
+  terms.forEach(t => {
+    if (item.q.toLowerCase().includes(t)) s += 3;
+    if (item.a.toLowerCase().includes(t)) s += 2;
+    if (item.kw.some(k => k.toLowerCase().includes(t))) s += 2;
+    if (item.cat.includes(t)) s += 1;
+  });
+  return s;
+}
+
+function highlight(text, q) {
+  if (!q) return text;
+  const terms = q.split(/\s+/).filter(Boolean);
+  let r = text;
+  terms.forEach(t => {
+    const re = new RegExp(`(${t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+    r = r.replace(re, '<mark>$1</mark>');
+  });
+  return r;
+}
+
+function onSearch(val) {
+  const q = val.trim();
+  const clearBtn = document.getElementById('clearBtn');
+  clearBtn.classList.toggle('show', q.length > 0);
+
+  if (!q) {
+    clearActive();
+    hideAllContent();
+    document.getElementById('welcomeState').classList.remove('hidden');
+    currentMode = 'welcome';
+    return;
+  }
+
+  // Switch to search mode
+  hideAllContent();
+  clearActive();
+  document.getElementById('searchPanel').classList.remove('hidden');
+
+  const filtered = QA_DATA
+    .map(item => ({ item, s: score(item, q) }))
+    .filter(({ s }) => s > 0)
+    .sort((a, b) => b.s - a.s)
+    .map(({ item }) => item);
+
+  const meta = document.getElementById('resultMeta');
+  const list = document.getElementById('resultList');
+  const empty = document.getElementById('emptyState');
+
+  list.innerHTML = '';
+  empty.classList.remove('show');
+
+  if (filtered.length === 0) {
+    meta.innerHTML = '';
+    empty.classList.add('show');
+    return;
+  }
+
+  meta.innerHTML = `找到 <span>${filtered.length}</span> 筆結果`;
+
+  filtered.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'r-card';
+    // check if this QA has related video
+    let videoHint = '';
+    Object.entries(VIDEO_RELATED_QA).forEach(([vid, ids]) => {
+      if (ids.includes(item.id)) {
+        const labels = { login:'登入後台', article:'新增文章', image:'上傳圖片', menu:'修改選單' };
+        videoHint += `<span class="r-video-hint" onclick="showVideo('${vid}');event.stopPropagation()">🎬 觀看「${labels[vid]}」影片教學</span>`;
+      }
+    });
+
+    card.innerHTML = `
+      <div class="r-head">
+        <span class="r-badge badge-${item.cat}">${item.cat}</span>
+        <span class="r-q">${highlight(item.q, q)}</span>
+        <span class="r-arr">▶</span>
+      </div>
+      <div class="r-body">
+        <div class="r-label">解決方式</div>
+        <div class="r-a">${highlight(item.a, q)}</div>
+        ${videoHint}
+      </div>
+    `;
+    card.querySelector('.r-head').addEventListener('click', () => card.classList.toggle('open'));
+    if (filtered.length <= 3) card.classList.add('open');
+    list.appendChild(card);
+  });
+
+  currentMode = 'search';
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  onSearch('');
+  document.getElementById('searchInput').focus();
+}
+
+function toggleInner(el) { el.classList.toggle('open'); }
+</script>
+</body>
+</html>

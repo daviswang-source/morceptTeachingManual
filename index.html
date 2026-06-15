@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>後台操作手冊 · 默聲創意</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #FFFDF5;
+    --surface: #FFFFFF;
+    --border: #EDE8D8;
+    --text-primary: #151C31;
+    --text-secondary: #5A5F72;
+    --text-muted: #A8ADBF;
+    --accent: #151C31;
+    --accent-light: #FFFBEA;
+    --accent-mid: #F8CB2A;
+    --tag-bg: #FEF9EC;
+    --tag-text: #151C31;
+    --green: #B08800;
+    --green-light: #FFFBEA;
+    --yellow: #F8CB2A;
+    --shadow-sm: 0 1px 4px rgba(21,28,49,.05);
+    --shadow-md: 0 4px 20px rgba(21,28,49,.08);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-logo {
+    width: 36px; height: 36px;
+    background: var(--yellow);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .header-logo svg { width: 20px; height: 20px; }
+  .header-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+  .header-sub { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+
+  /* ── Main ── */
+  .main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  /* ── Search area ── */
+  .search-section { margin-bottom: 28px; }
+  .search-label {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  .search-hint {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 14px;
+  }
+  .search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+  .search-input {
+    width: 100%;
+    padding: 14px 48px 14px 48px;
+    font-size: 15px;
+    font-family: inherit;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text-primary);
+    outline: none;
+    box-shadow: var(--shadow-sm);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(248,203,42,.25);
+  }
+  .search-input::placeholder { color: var(--text-muted); }
+  .clear-btn {
+    position: absolute;
+    right: 14px;
+    background: none; border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: none;
+    align-items: center; justify-content: center;
+    transition: background .15s, color .15s;
+  }
+  .clear-btn:hover { background: var(--tag-bg); color: var(--text-primary); }
+  .clear-btn.visible { display: flex; }
+
+  /* ── Category tabs ── */
+  .tabs-wrap {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .tab {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all .15s;
+    font-weight: 500;
+  }
+  .tab:hover { border-color: var(--accent-mid); color: var(--accent); background: var(--tag-bg); }
+  .tab.active { border-color: var(--accent); background: var(--accent); color: #F8CB2A; }
+
+  /* ── Result count ── */
+  .result-meta {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    min-height: 20px;
+  }
+  .result-meta span { color: var(--accent); font-weight: 600; }
+
+  /* ── QA Card ── */
+  .qa-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .qa-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .qa-card:hover { border-color: var(--accent-mid); box-shadow: 0 4px 16px rgba(248,203,42,.15); }
+  .qa-card.open { border-color: var(--yellow); }
+
+  .qa-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 18px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .qa-badge {
+    flex-shrink: 0;
+    margin-top: 1px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    white-space: nowrap;
+  }
+  .qa-question {
+    flex: 1;
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+  .qa-chevron {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--text-muted);
+    transition: transform .2s;
+  }
+  .qa-card.open .qa-chevron { transform: rotate(180deg); }
+
+  .qa-body {
+    display: none;
+    padding: 0 18px 18px 18px;
+    border-top: 1px solid var(--border);
+  }
+  .qa-card.open .qa-body { display: block; }
+  .qa-answer-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin: 14px 0 6px;
+  }
+  .qa-answer {
+    font-size: 14px;
+    color: var(--text-primary);
+    line-height: 1.7;
+    background: var(--green-light);
+    border-left: 3px solid var(--yellow);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 10px 14px;
+  }
+
+  /* highlight match */
+  mark {
+    background: #F8CB2A;
+    color: inherit;
+    border-radius: 2px;
+    padding: 0 1px;
+  }
+
+  /* ── Empty state ── */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+    display: none;
+  }
+  .empty.show { display: block; }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-title { font-size: 16px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+  .empty-sub { font-size: 13px; }
+
+  /* ── Category badge colors ── */
+  .badge-後台操作 { background: #FEF0C7; color: #92700A; }
+  .badge-網站異常 { background: #FDE8E8; color: #B83232; }
+  .badge-需求評估 { background: #E8F4FD; color: #2A6190; }
+  .badge-SEO      { background: #E6F6EF; color: #1E7A4E; }
+  .badge-主機續約 { background: #F0EEF9; color: #5A47A0; }
+  .badge-代碼串接 { background: #FDE8F5; color: #A02878; }
+  .badge-特殊功能 { background: #EEF0F5; color: #3E4460; }
+
+  @media (max-width: 480px) {
+    .main { padding: 20px 14px 60px; }
+    .search-label { font-size: 18px; }
+    .search-input { font-size: 14px; padding: 12px 44px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#151C31" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+  </div>
+  <div style="flex:1">
+    <div class="header-title">後台操作手冊</div>
+    <div class="header-sub">輸入關鍵字快速找到解答</div>
+  </div>
+  <div style="font-size:12px;color:#A8ADBF;letter-spacing:.04em;font-weight:500;">默聲創意</div>
+</header>
+
+<main class="main">
+  <section class="search-section">
+    <div class="search-label">您想找什麼呢？</div>
+    <div class="search-hint">試試輸入：圖片、收不到信、分頁小圖、快取、續約……</div>
+    <div class="search-box">
+      <span class="search-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </span>
+      <input class="search-input" id="searchInput" type="text" placeholder="搜尋問題或關鍵字…" autocomplete="off" />
+      <button class="clear-btn" id="clearBtn" title="清除">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </section>
+
+  <div class="tabs-wrap" id="tabs"></div>
+  <div class="result-meta" id="resultMeta"></div>
+  <div class="qa-list" id="qaList"></div>
+  <div class="empty" id="emptyState">
+    <div class="empty-icon">🔍</div>
+    <div class="empty-title">找不到相關問題</div>
+    <div class="empty-sub">請嘗試其他關鍵字，或直接聯繫我們的客服團隊</div>
+  </div>
+</main>
+
+<script>
+const QA_DATA = [
+  // ── 後台操作 ──
+  {
+    id: 1, cat: "後台操作",
+    q: "圖片尺寸是多少？可以從哪裡看？",
+    a: "到媒體庫可以查看詳細資料，或是直接另存圖片下來查看。",
+    kw: ["圖片","尺寸","大小","解析度","寬度","高度","媒體庫","media","pixel","px","幾乘幾","圖片規格","圖檔",
+        "圖片要多大","要傳幾MB","上傳圖片規格","圖片比例","圖片太小","圖片太大","要幾公分","圖片尺寸怎麼看",
+        "圖片比例不對","照片大小","照片尺寸","圖片長寬"]
+  },
+  {
+    id: 2, cat: "後台操作",
+    q: "後台權限不夠完整，可以加開嗎？",
+    a: "可以，但後續不包含維運服務。請聯繫我們確認需要開放的權限範圍。",
+    kw: ["權限","加開","帳號","角色","管理員","editor","admin","無法操作","看不到","功能不見","權限不夠","存取",
+        "某些功能不見了","沒辦法編輯","按鈕不見","同事登入看不到","幫同事開帳號","新增使用者","員工帳號",
+        "多人使用","另一個帳號","分公司帳號","限制權限","開放更多功能"]
+  },
+  {
+    id: 3, cat: "後台操作",
+    q: "網站可以放影片嗎？",
+    a: "可以，請先將影片上傳到 YouTube 或 Vimeo，再提供連結給我們嵌入。",
+    kw: ["影片","video","youtube","vimeo","上傳影片","嵌入","播放","mp4","影音",
+        "想放一段影片","網站嵌入影片","公司介紹影片","產品影片","宣傳片","把影片放到網站","背景影片",
+        "影片怎麼上傳","影片播不出來","直接上傳影片","影片連結"]
+  },
+  {
+    id: 4, cat: "後台操作",
+    q: "想要加上表格，可以怎麼做？",
+    a: "請先由我們協助建立表格，再說明操作邏輯給您了解，方便後續自行維護。",
+    kw: ["表格","table","欄位","列","行","資料表","新增表格",
+        "像Excel那種","價格表","比較表","規格表","做個表格","功能比較","方案對比","類似試算表",
+        "要做一個表","加入圖表","資料整理成表格"]
+  },
+  {
+    id: 5, cat: "後台操作",
+    q: "網站內容已修改，但為什麼電腦/手機顯示不一樣？",
+    a: "可能只改到其中一個版本（電腦版或手機版）的設定，請確認兩個裝置版本都有更新。",
+    kw: ["手機","電腦","版型","RWD","響應式","不一樣","顯示","跑版","排版","mobile","desktop","只有電腦","只有手機",
+        "用手機看不對","手機版跑掉","平板顯示異常","手機排版亂掉","電腦改好但手機壞了","兩個版本","手機版沒更新",
+        "手機和電腦不一樣","平板版","用手機看網站","響應式壞了"]
+  },
+  {
+    id: 6, cat: "後台操作",
+    q: "後台有中文版可以使用嗎？",
+    a: "後台本身沒有中文版，但可以使用瀏覽器內建的翻譯功能將介面翻成中文。",
+    kw: ["中文","語言","翻譯","英文看不懂","介面","後台語言","改成中文","中文化",
+        "全部都是英文","看不懂英文","操作介面英文","後台都是英文字","可以翻中文嗎","介面語言",
+        "後台語言設定","改語言","中文介面","英文介面看不懂"]
+  },
+  {
+    id: 7, cat: "後台操作",
+    q: "為什麼設定粗體後文字會變色？",
+    a: "這是因為樣式有預先設定的緣故，粗體文字的顏色由佈景主題樣式控制。如需調整請聯繫我們。",
+    kw: ["粗體","bold","變色","顏色","文字顏色","字體顏色","樣式","字色","改顏色",
+        "字加粗顏色變了","我只是想加粗","變藍色","粗體後變其他顏色","文字格式問題","加粗出問題",
+        "字體顏色自動改變","格式跑掉","文字樣式異常","設定粗體顏色跑掉"]
+  },
+  {
+    id: 8, cat: "後台操作",
+    q: "文章排序可以更動嗎？",
+    a: "可以，通常是修改發布日期來調整排序；若有安裝排序外掛則依照外掛設定操作。",
+    kw: ["排序","順序","文章","調整順序","文章排列","先後","置頂","排列","發布日期",
+        "文章順序亂掉","想把某篇文章排最前面","調整新聞順序","文章置頂","改文章位置",
+        "最新文章跑哪去了","怎麼讓這篇排第一","文章列表順序","舊文章跑出來","文章排列方式"]
+  },
+  {
+    id: 9, cat: "後台操作",
+    q: "可以自己改字型、字級、行距嗎？",
+    a: "這類樣式設定需要由我們端調整，請直接告知需求，我們會協助處理。",
+    kw: ["字型","字體","字級","行距","font","大小","字體大小","line-height","排版","字距","改字",
+        "字太小","字太大","行間距太窄","字看起來太擠","想換一個字體","文字間距","字體樣式",
+        "文字太密","字體不好看","整個網站字體","全站字型","換成圓體","換成黑體"]
+  },
+  {
+    id: 10, cat: "後台操作",
+    q: "文章下方的描述要怎麼改？",
+    a: "進到文章後台 → 展開右上角「顯示更多項目」→ 將「內容摘要」打勾 → 下方會出現可編輯的「內容摘要」欄位。",
+    kw: ["描述","摘要","文章描述","excerpt","文章下方","簡介","文章簡介","內容摘要","列表描述",
+        "文章列表下面那段字","預覽文字","文章小簡介","封面下方的說明","文章卡片的說明文字",
+        "列表頁的文字介紹","文章概要","短描述在哪改","文章條列介紹","顯示在列表的那段文字"]
+  },
+
+  // ── 網站異常 ──
+  {
+    id: 11, cat: "網站異常",
+    q: "表單收不到信，可以怎麼調整？",
+    a: "請提供一組 Gmail（需要帳號、密碼、驗證用手機號碼），我們協助重新設定寄件信箱。",
+    kw: ["表單","收不到","信件","email","mail","沒收到","寄信","聯絡表單","form","通知信","收信","信箱",
+        "客人填了沒反應","沒有收到通知","表單送出沒有信","聯絡我們沒有回應","客戶填單我沒收到",
+        "填完表單沒有寄信","詢問表單不寄信","報名表單沒收到","信跑去哪","表單失效","沒有寄信過來"]
+  },
+  {
+    id: 12, cat: "網站異常",
+    q: "修改後前台無法正常顯示，是什麼原因？",
+    a: "通常是快取問題，請清除瀏覽器快取後重新整理看看。",
+    kw: ["快取","cache","清快取","顯示不正確","沒更新","畫面沒變","清除快取","重新整理","更新沒顯示","瀏覽器快取",
+        "我明明已經改了","改完網站沒變","後台改好前台還是舊的","存檔了但沒更新","怎麼還是舊版",
+        "重新整理還是一樣","瀏覽器沒更新","畫面還是舊的","改了但沒有生效","存了但看不到"]
+  },
+  {
+    id: 13, cat: "網站異常",
+    q: "網站為什麼突然連不上？",
+    a: "請先確認主機與網域的狀況是否正常，可以聯繫我們協助排查。",
+    kw: ["連不上","無法連線","網站掛了","404","500","down","當機","打不開","沒有回應","網頁錯誤","connection","主機","掛掉",
+        "網站壞掉了","網站打不開","白畫面","空白頁","網站消失了","找不到網頁","一直轉圈圈",
+        "網站出錯了","客戶說連不上","突然不能用","網頁出現錯誤","網站跑不出來"]
+  },
+  {
+    id: 14, cat: "網站異常",
+    q: "用公司網路連不上網站，是什麼原因？",
+    a: "可能是公司內網有防火牆擋住，請嘗試將網站加入公司網路的白名單。",
+    kw: ["公司網路","內網","連不上","白名單","防火牆","辦公室","vpn","blocked","公司內部","公司電腦",
+        "在公司打不開","辦公室看不到","用公司wifi連不上","回家就正常","用手機4G可以但公司不行",
+        "同事說打不開","公司電腦看不到","公司網路被擋","IT說被擋了","在外面可以在公司不行"]
+  },
+  {
+    id: 15, cat: "網站異常",
+    q: "登入後台時跳出「網站管理員電子郵件地址驗證」，要怎麼辦？",
+    a: "點左下角「稍後提醒我」略過即可，不影響正常使用。",
+    kw: ["驗證","電子郵件","驗證信","後台登入","跳出視窗","管理員","email驗證","彈跳","提示","登入異常",
+        "登入後跳出一個視窗","有個視窗一直出現","登入有警告訊息","要我驗證email","登入出現通知",
+        "後台有個彈跳提醒","一登入就出現視窗","不知道要按什麼","登入後有提示框","強迫我驗證"]
+  },
+  {
+    id: 16, cat: "網站異常",
+    q: "已經更改快速連結，但為什麼都會失效？",
+    a: "請改到「佇列處 → 快速編輯 → 從代稱修改」，而不是直接修改標題。",
+    kw: ["快速連結","連結","失效","網址","url","slug","代稱","改連結","連結錯誤","permalink","路徑",
+        "網址改了但點進去是舊的","連結404","改了網址點下去沒有","文章網址失效","連結壞掉",
+        "分享出去的連結失效","舊連結失效","改標題後連結不見","網址變了","點連結沒反應"]
+  },
+  {
+    id: 17, cat: "網站異常",
+    q: "一直收到垃圾/釣魚信件，可以怎麼防治？",
+    a: "可以確認是否有安裝 reCAPTCHA，或由我們手動封鎖 IP；若來源集中在特定國家，也可報價封鎖特定國家 IP。",
+    kw: ["垃圾信","釣魚","spam","機器人","bot","表單亂填","recaptcha","封鎖ip","防垃圾","騷擾信","填單攻擊",
+        "一直收到奇怪的信","收到很多亂填的表單","有人一直攻擊表單","信箱被洗","假信件",
+        "有人用機器人填表單","一直有騷擾","惡意填單","廣告信件","釣魚郵件","詐騙信"]
+  },
+  {
+    id: 18, cat: "網站異常",
+    q: "為什麼 favicon 都還是一顆地球？",
+    a: "請確認設計是否有設定網站圖示（favicon）。如確認已設定但仍顯示地球，請聯繫我們協助排查。",
+    kw: ["favicon","地球","圖示","網站圖示","icon","tab圖","瀏覽器icon","小圖","網頁圖示","logo沒換",
+        "瀏覽器分頁上的小圖","分頁最前面的那個圖","標籤頁的圖示","Chrome分頁圖案","開很多分頁那個小圖",
+        "網站分頁圖還是地球","Tab上的圖沒換","書籤旁邊的圖","網址列旁邊的圖示","那個小小的網站圖案沒有換",
+        "我們的logo沒有出現在分頁","瀏覽器標籤圖示","網站縮圖","地球圖案沒換"]
+  },
+  {
+    id: 19, cat: "網站異常",
+    q: "為什麼手機版選單會有重複的項目？",
+    a: "這是正常的設計。因為「展開子選單」和「進入頁面」這兩個功能在手機版上會有衝突，所以系統會多顯示一個項目，確保兩個操作都能執行。",
+    kw: ["手機選單","重複","選單","menu","導覽","nav","重疊","手機版","項目重複","選單異常",
+        "手機版導覽列有兩個一樣的","點漢堡選單出現重複","手機點開選單重複","同樣的選項出現兩次",
+        "手機版有bug","手機選單壞掉了","導覽列重複","選單顯示異常","手機點選單有兩個"]
+  },
+
+  // ── 需求評估 ──
+  {
+    id: 20, cat: "需求評估",
+    q: "圖片可以不被下載嗎？",
+    a: "可以設定鎖右鍵（全站），讓訪客無法直接右鍵另存圖片。",
+    kw: ["下載","圖片","鎖右鍵","防下載","禁止另存","版權","protect","保護圖片","不讓下載","右鍵",
+        "不想讓人存圖","防止別人拿走圖片","圖片被偷走","不讓訪客下載","右鍵另存另存圖片","防盜圖",
+        "圖片版權保護","點右鍵不要有另存","圖片不給下載","不想讓人複製圖片","禁止右鍵"]
+  },
+  {
+    id: 21, cat: "需求評估",
+    q: "LOGO 跟選單可以從哪裡改？",
+    a: "LOGO 和選單需由我們端協助修改，請提供新的素材或修改需求即可。",
+    kw: ["logo","選單","導覽列","menu","標誌","header","頁首","更換logo","改選單","修改logo","導航",
+        "想換公司logo","改上方的圖案","換一個新logo","導覽列要改","選單要加新項目","logo要更新",
+        "網站最上方的圖","把logo換掉","選單順序要調整","頁首的logo","新增選單","改導覽欄"]
+  },
+  {
+    id: 22, cat: "需求評估",
+    q: "有網站資料想要更新，應該要提供什麼資料？以及上傳到哪？",
+    a: "請整理成一份 Word 或 PPT 檔案後寄到我們信箱，圖檔需另外提供（不要嵌在文件內）。",
+    kw: ["更新資料","提供資料","更新內容","怎麼給","寄給","怎麼傳","素材","文字更新","圖片更新","內容修改","資料給你",
+        "我要更新網站內容","文案要改","要換圖片","要修改文字","提供修改內容","傳給你怎麼傳",
+        "素材要放哪","資料怎麼給你","圖片要怎麼傳","用什麼方式給你","寄到哪個信箱","要交給你什麼"]
+  },
+  {
+    id: 23, cat: "需求評估",
+    q: "想使用自己的 SSL 憑證，可以嗎？",
+    a: "可以，視情況可能有額外費用，請聯繫我們評估。",
+    kw: ["ssl","https","憑證","安全","鎖頭","加密","自己的ssl","換憑證","ssl錯誤","安全性","不安全",
+        "網址列沒有鎖頭","瀏覽器說不安全","網址是http不是https","安全憑證","連線不安全",
+        "瀏覽器警告不安全","網址沒有綠色鎖頭","用戶說不安全","網站顯示不安全","ssl自備"]
+  },
+  {
+    id: 24, cat: "需求評估",
+    q: "網站想要新增語系，應該要怎麼做？",
+    a: "請轉由業務報價，翻譯內容由客戶自行提供。",
+    kw: ["多語言","語系","英文","日文","翻譯","語言","i18n","新增語言","多國","語言切換","多語",
+        "要加英文版","想做日文版","新增語言版本","語言切換按鈕","做一個英文頁面","國外客戶看",
+        "外國人看的版本","想要中英雙語","多國語言網站","加一個語言","網站語言要多一個"]
+  },
+  {
+    id: 25, cat: "需求評估",
+    q: "有檔案想讓訪客下載，可以怎麼做？",
+    a: "請先將檔案上傳到雲端空間（如 Google Drive），再將分享連結提供給我們設定在頁面上。",
+    kw: ["下載","檔案","文件","PDF","讓人下載","附件","提供下載","download","資料下載","google drive",
+        "想讓客戶下載型錄","放一個PDF可以下載","提供檔案給訪客","型錄下載","報告書下載",
+        "讓人下載我的文件","加一個下載按鈕","可以下載的連結","附上可下載的檔案","DM下載","表單下載"]
+  },
+  {
+    id: 26, cat: "需求評估",
+    q: "不喜歡網站上的字體，可以改成想要的嗎？",
+    a: "可以，但只能使用 Google Fonts 上提供的字體。",
+    kw: ["字體","font","換字體","字型","中文字體","英文字體","google font","改字型","字體不好看",
+        "字體感覺不對","整個網站字體想換","這個字型太正式","想要圓一點的字","想換成比較活潑的字",
+        "字體太嚴肅","字型可以換嗎","全站字型","換字型","想要蘋方字體","字體風格不喜歡"]
+  },
+  {
+    id: 27, cat: "需求評估",
+    q: "為什麼分享的連結會是一堆亂碼？",
+    a: "中文網址在系統處理後會變成編碼（URL encoding），在意的話可以將網址改為英文。",
+    kw: ["亂碼","連結","分享","網址","url","中文","編碼","%","醜","網址亂碼","slug中文",
+        "網址一堆%號","複製網址很奇怪","連結看起來很醜","網址有很多符號","傳給別人的連結亂碼",
+        "分享出去URL是奇怪的字","網址不是中文","URL亂碼","複製連結是亂的","網址沒辦法直接看懂"]
+  },
+  {
+    id: 28, cat: "需求評估",
+    q: "能請你們幫我做素材圖嗎？",
+    a: "素材圖屬於平面設計服務，請轉由業務報價。",
+    kw: ["素材","圖","設計","banner","橫幅","做圖","製圖","視覺","圖片設計","美工","幫我做圖",
+        "幫我設計一張圖","做一個banner","製作活動圖","需要美工","設計圖片","做視覺素材",
+        "需要一張宣傳圖","圖片設計","做廣告圖","社群貼圖","活動DM","封面圖設計"]
+  },
+
+  // ── SEO ──
+  {
+    id: 29, cat: "SEO",
+    q: "可以從哪裡設定 SEO？",
+    a: "每個文章、頁面、Portfolio items、產品下方都有 SEO 設定區塊，可以在各頁面底部找到。",
+    kw: ["seo","設定seo","哪裡設定","搜尋","優化","關鍵字","google排名","搜尋引擎","yoast","meta",
+        "怎麼讓google找到我","想讓網站出現在搜尋","google搜不到我","要去哪裡填關鍵字",
+        "搜尋引擎優化在哪設定","SEO要在哪邊改","怎麼設定頁面關鍵字","想讓排名上去","設定搜尋關鍵字"]
+  },
+  {
+    id: 30, cat: "SEO",
+    q: "為什麼已經調整 SEO 設定，但沒有顯示？",
+    a: "SEO 更新需要等 Google 重新爬取網站，時間不固定，通常需要幾天到幾週不等。",
+    kw: ["seo沒更新","沒顯示","搜尋看不到","google沒更新","索引","爬蟲","還沒顯示","多久","更新多久",
+        "改了SEO但google沒變","已經設定了但搜不到","搜尋結果沒有更新","幾天才會生效","為什麼還是舊的",
+        "設定完要等多久","google還沒抓到","搜尋描述還是舊的","Title改了沒生效","SEO要多久才有效"]
+  },
+  {
+    id: 31, cat: "SEO",
+    q: "可以移除分享連結後出現的「上一頁、下一頁」描述嗎？",
+    a: "可以。請到 meta description 欄位，將裡面的方塊符號刪掉，換成您想呈現的文案即可。",
+    kw: ["分享","預覽","上一頁","下一頁","og","open graph","描述","meta description","社群分享","fb分享","line分享",
+        "分享到LINE預覽怪怪的","臉書分享顯示錯誤","分享出去描述是錯的","IG分享預覽","社群分享不好看",
+        "分享連結下面的說明不對","貼到Line的預覽","縮圖下面的說明","分享卡片","分享出去那個方塊"]
+  },
+  {
+    id: 32, cat: "SEO",
+    q: "頁面 Title、Meta Description、focus keyphrase 應該填什麼？",
+    a: "Title 是在搜尋結果中顯示的頁面標題；Meta Description 是頁面描述；focus keyphrase 是該頁面最主要的關鍵字。",
+    kw: ["title","meta","description","keyphrase","關鍵字","填什麼","seo怎麼填","標題","頁面標題","seo設定說明",
+        "SEO那些欄位要填什麼","頁面標題要怎麼寫","描述欄位填什麼","關鍵字要怎麼選","SEO欄位說明",
+        "搜尋標題要填什麼","focus keyphrase是什麼","meta要怎麼寫","SEO欄位填法","搜尋結果標題怎麼改"]
+  },
+  {
+    id: 33, cat: "SEO",
+    q: "已經有找廠商分析網站的 SEO，你們可以協助執行嗎？",
+    a: "可以，視情況評估是否有額外費用，請提供廠商的分析報告給我們確認範圍。",
+    kw: ["seo執行","seo優化","廠商","第三方","SEO報告","優化建議","seo服務","幫我做seo",
+        "有人幫我做了SEO分析","顧問建議我改SEO","SEO公司給的建議","幫我執行SEO改善","SEO優化報告",
+        "按照報告改SEO","有一份SEO建議書","依據分析執行","SEO改善項目"]
+  },
+
+  // ── 主機續約 ──
+  {
+    id: 34, cat: "主機續約",
+    q: "應該要轉帳到哪個帳戶？",
+    a: "轉帳帳戶資訊在請款單上都有，請以最新的請款單為準。",
+    kw: ["轉帳","帳戶","繳費","付款","匯款","帳號","銀行","怎麼付","繳款","付費方式",
+        "費用要怎麼繳","主機費要匯去哪","要打哪個帳號","網域費用付款","主機費怎麼繳",
+        "繳費帳號是多少","要匯款到哪","帳戶資訊","怎麼繳主機費","付款資訊在哪"]
+  },
+  {
+    id: 35, cat: "主機續約",
+    q: "主機/網域到期日是什麼時候？",
+    a: "到期日在請款單上都有列明，請查看最新的請款單。",
+    kw: ["到期","到期日","續約","何時到期","什麼時候","expire","期限","什麼時候要付","快到期",
+        "主機什麼時候到期","網域要到期了嗎","什麼時候要繳費","快到期了嗎","幾月要續約",
+        "網域快過期","主機到期","到期了嗎","還有多久到期","幾號要繳","今年什麼時候要付"]
+  },
+  {
+    id: 36, cat: "主機續約",
+    q: "不續約的話，網站還可以正常運作嗎？",
+    a: "不行。主機或網域到期後，網站將無法正常運作，請務必在到期前完成續約。",
+    kw: ["不續約","停掉","不付","到期後","網站還能用","不用了","過期","關掉",
+        "如果不付網站會怎樣","不繳費網站會消失嗎","忘記續約怎麼辦","到期沒付會怎麼樣",
+        "不想繼續了","主機不繼續可以嗎","到期後還能用嗎","過了沒繳","不付網站就關了嗎"]
+  },
+  {
+    id: 37, cat: "主機續約",
+    q: "可以自行管理網站/網域嗎？",
+    a: "可以，若您想自行管理，我們會提供備份檔供您下載（限一週內下載）。",
+    kw: ["自己管","自行管理","搬走","移轉","備份","拿走","自己主機","換主機","搬移","備份檔",
+        "我想自己管網站","把網站搬到別的地方","換其他廠商","我想要檔案","網站搬家",
+        "要備份網站","把資料拿回來","自己架主機","離開你們後網站怎辦","資料可以拿走嗎"]
+  },
+  {
+    id: 38, cat: "主機續約",
+    q: "空間還有多少可以用？如果不夠了可以加購嗎？",
+    a: "可以升級主機方案，目前空間使用量請聯繫設計確認。",
+    kw: ["空間","容量","主機空間","不夠用","加購","升級","硬碟","storage","滿了","空間不夠",
+        "上傳圖片說空間不足","網站說容量滿了","伺服器空間","主機快滿了","儲存空間不夠",
+        "上傳失敗說空間不足","還有多少空間","圖片上傳失敗空間","主機容量升級","擴充空間"]
+  },
+  {
+    id: 39, cat: "主機續約",
+    q: "可以先開立發票嗎？",
+    a: "可以，請提供公司抬頭、統一編號及地址，我們會協助先開立發票。",
+    kw: ["發票","開發票","統編","報帳","請款","先開","三聯式","電子發票","公司發票",
+        "需要發票報帳","要繳費用但需要發票","先給發票後付款","公司要發票才能匯款",
+        "統一編號開發票","要報帳需要發票","三聯式發票","先開再付","發票抬頭"]
+  },
+
+  // ── 代碼串接 ──
+  {
+    id: 40, cat: "代碼串接",
+    q: "可以串接 GA / GTM / Facebook Pixel / 廣告轉換碼 / 企業信箱 / Pinterest 嗎？",
+    a: "可以，使用 Tracking Code Manager 串接即可。請提供相關代碼或設定資訊給我們處理。",
+    kw: ["GA","GTM","google analytics","google tag manager","fb pixel","facebook pixel","追蹤","廣告","轉換",
+        "GSC","企業信箱","追蹤碼","串接","代碼","pixel","pinterest","廣告代碼",
+        "想知道有多少人來看網站","安裝GA","放追蹤碼","廣告追蹤","FB廣告追蹤","安裝像素",
+        "Google搜尋後台","想看流量數據","廣告轉換追蹤","安裝分析工具","網站流量分析","裝GTM",
+        "Google廣告代碼","企業email","信箱串接","公司信箱"]
+  },
+
+  // ── 特殊功能 ──
+  {
+    id: 41, cat: "特殊功能",
+    q: "可以串接第三方 API 嗎？",
+    a: "可以評估，請轉由業務接洽，我們會確認技術可行性與報價。",
+    kw: ["api","串接","第三方","金流","物流","crm","erp","系統整合","串api","外部系統","api串接",
+        "想串金流","綠界","藍新","物流追蹤","跟ERP串","跟CRM連動","資料同步","串其他系統",
+        "讓兩個系統互通","想接某某系統","自動帶入資料","系統整合","外部資料串接","API介接"]
+  }
+];
+
+const CATEGORIES = ["全部", ...new Set(QA_DATA.map(q => q.cat))];
+
+let currentCat = "全部";
+let currentQuery = "";
+
+// ── Build tabs ──
+const tabsWrap = document.getElementById("tabs");
+CATEGORIES.forEach(cat => {
+  const btn = document.createElement("button");
+  btn.className = "tab" + (cat === "全部" ? " active" : "");
+  btn.textContent = cat;
+  btn.dataset.cat = cat;
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    btn.classList.add("active");
+    currentCat = cat;
+    render();
+  });
+  tabsWrap.appendChild(btn);
+});
+
+// ── Search ──
+const searchInput = document.getElementById("searchInput");
+const clearBtn = document.getElementById("clearBtn");
+
+searchInput.addEventListener("input", () => {
+  currentQuery = searchInput.value.trim();
+  clearBtn.classList.toggle("visible", currentQuery.length > 0);
+  render();
+});
+
+clearBtn.addEventListener("click", () => {
+  searchInput.value = "";
+  currentQuery = "";
+  clearBtn.classList.remove("visible");
+  searchInput.focus();
+  render();
+});
+
+// ── Filter & score ──
+function score(item, q) {
+  if (!q) return 1;
+  const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+  let s = 0;
+  terms.forEach(t => {
+    if (item.q.includes(t)) s += 3;
+    if (item.a.includes(t)) s += 2;
+    if (item.kw.some(k => k.toLowerCase().includes(t))) s += 2;
+    if (item.cat.includes(t)) s += 1;
+  });
+  return s;
+}
+
+function highlight(text, q) {
+  if (!q) return text;
+  const terms = q.split(/\s+/).filter(Boolean);
+  let result = text;
+  terms.forEach(t => {
+    const re = new RegExp(`(${t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    result = result.replace(re, '<mark>$1</mark>');
+  });
+  return result;
+}
+
+// ── Render ──
+function render() {
+  const list = document.getElementById("qaList");
+  const meta = document.getElementById("resultMeta");
+  const empty = document.getElementById("emptyState");
+
+  let filtered = QA_DATA;
+  if (currentCat !== "全部") {
+    filtered = filtered.filter(item => item.cat === currentCat);
+  }
+
+  if (currentQuery) {
+    filtered = filtered
+      .map(item => ({ item, s: score(item, currentQuery) }))
+      .filter(({ s }) => s > 0)
+      .sort((a, b) => b.s - a.s)
+      .map(({ item }) => item);
+  }
+
+  list.innerHTML = "";
+  empty.classList.remove("show");
+
+  if (filtered.length === 0) {
+    empty.classList.add("show");
+    meta.innerHTML = "";
+    return;
+  }
+
+  if (currentQuery || currentCat !== "全部") {
+    meta.innerHTML = `找到 <span>${filtered.length}</span> 筆結果`;
+  } else {
+    meta.innerHTML = `共 <span>${filtered.length}</span> 筆常見問題`;
+  }
+
+  filtered.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "qa-card";
+    card.innerHTML = `
+      <div class="qa-header">
+        <span class="qa-badge badge-${item.cat}">${item.cat}</span>
+        <span class="qa-question">${highlight(item.q, currentQuery)}</span>
+        <span class="qa-chevron">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </span>
+      </div>
+      <div class="qa-body">
+        <div class="qa-answer-label">解決方式</div>
+        <div class="qa-answer">${highlight(item.a, currentQuery)}</div>
+      </div>
+    `;
+    card.querySelector(".qa-header").addEventListener("click", () => {
+      card.classList.toggle("open");
+    });
+
+    // Auto-open if searching
+    if (currentQuery) card.classList.add("open");
+
+    list.appendChild(card);
+  });
+}
+
+render();
+</script>
+</body>
+</html>
